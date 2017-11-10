@@ -3,8 +3,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Scanner;
-//import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+//import java.util.regex.Matcher;
+import java.io.*;
+//import java.util.regex.Pattern;
 
 /** Assumes UTF-8 encoding. JDK 7+. */
 public class ReadWithScanner {
@@ -25,26 +29,90 @@ public class ReadWithScanner {
     fFilePath = Paths.get(aFileName);
   }
   
+  ArrayList<MibType> ArrayOfTypes = new ArrayList<MibType>();
+  int[] mib2 = {1,3,6,1,2,1,Integer.MAX_VALUE};
+  
+  
+ 
+
+  
+  
   public void ProcessMibFile() throws IOException{
 	//fFilePath = Paths.get(aFileName);
      Scanner s =  new Scanner(fFilePath);
+     String mib_name ="";
+     String access="";
+     String Description="";
+     int child_oid;
 	    while (s.hasNextLine()){
 	    	String line = s.nextLine();
 	    	//System.out.println(line.replaceAll("\\s+",""));
-	    	if(line.indexOf("IMPORTS") != -1){
+	    	/*if(line.indexOf("IMPORTS") != -1){
 	    		System.out.println("lol");
-	    		s.nextLine();
+	    		//s.nextLine();
+	    		for( int i = 0; i < 20; i++)
+	    		{
 	    		System.out.println(s.next());
-	    	}
+	    		}
+	    	
+	    	
+	    		
+	    	} // CHUJ
 	    	else{
 	    		//System.out.println(line.replaceAll("\\s+",""));
 	    		//System.out.print("lul: ");
 	    		//System.out.println(s.next());
 	    	}
 	    	//System.out.println("lol");
+	    */
+	    	//System.out.println(line);
+	    	Matcher mNAME  = Pattern.compile("\\s+(.*?)\\sOBJECT-TYPE").matcher(line); 
+	    	Matcher mACCESS  = Pattern.compile("\\s+ACCESS+.\\s(.*)").matcher(line); 
+	    	//Matcher DESCRIPTION  = Pattern.compile("\\s+(.*?)\\sOBJECT-TYPE").matcher(line); 
+	    	Matcher mOID = Pattern.compile("(::=\\s+\\{(.*?)\\})").matcher(line);
+	
+	    	
+	    	
+	    	if (mNAME.find()) {
+	    		//NAME.group().replace("OBJECT-TYPE","");
+	           // System.out.println("NAME = " + mNAME.group().replace("OBJECT-TYPE","").trim()); 
+	            
+	            mib_name = mNAME.group().replace("OBJECT-TYPE","").trim();
+	            
+	            System.out.println(mib_name);
+	            //MibType mib = new MibType(NAME, );
+	            //ArrayOfTypes.add(object);
+	            
+	    	}
+	    	
+	    	 if(mACCESS.find()){
+	            	//access = mACCESS.group().replace("ACCESS","").trim();
+	    		 access = mACCESS.group().replace("ACCESS","").trim();
+	            	System.out.println(access);
+	
+	            }
+	    	if(mOID.find()){
+            	System.out.println(access);
+            	
+	    		
+	    	}
+	    	 
+	    	 //System.out.println(mib_name); 
+	    	 //
+	    	 //System.out.println("ACCESS = " + mACCESS.group().replace("ACCESS","").trim()); 
 	    }
   }
-	
+	/*public static void regexChecker(String theRegex, String str2Check)
+	{
+		
+		Pattern checkRegex = Pattern.compile(theRegex);
+		
+		Matcher regexMatcher = checkRegex.matcher(str2Check);
+		
+		
+		
+		
+	}*/
   
   
   // PRIVATE 
@@ -60,3 +128,42 @@ public class ReadWithScanner {
     return QUOTE + aText + QUOTE;
   }
 } 
+
+
+class MibType {
+	public String NAME;
+	public String ACCESS;
+	public String DESCRIPTION;
+	List<Integer> oid = new ArrayList<Integer>();
+	MibType(String in_NAME, String in_ACCESS, String in_DESCRIPTION, List<Integer> parent_mib, int children_mib){
+		oid = parent_mib;
+		oid.add(children_mib);
+	    NAME = in_NAME;
+	    ACCESS = in_ACCESS;
+	    DESCRIPTION = in_DESCRIPTION;
+    
+    }
+   }
+
+ class MibIdentifiers{
+	 MibIdentifiers(){};
+	 public List<String> mib_string_list;
+	 
+	 void GetStringList(){
+		 List<String> list = new ArrayList<String>();
+		 "system 1.1.235.6.5"
+		 while(hasnextline){
+		 
+				 
+		 }
+		 mib_string_list = list;
+	 }
+	 List<Integer> ParseStringList(List<String> listofstrings, String input){
+		 List<String> list = new ArrayList<String>();
+	 }
+	 
+	 
+	 
+ }
+ 
+ 

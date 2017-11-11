@@ -18,7 +18,10 @@ public class ReadWithScanner {
 	System.out.println(System.getProperty("user.dir"));
     ReadWithScanner parser = new ReadWithScanner("mib.txt");
     //parser.ProcessMibFile();
-    parser.MibGroupsMapping();
+    LinkedHashMap<String, List<Integer>> list_of_groups = parser.MibGroupsMapping();
+
+	  
+    
   }
   //TODO: Dorobic funkcje na znajdywanie obiektow (znajdz linijke poczatku i konca), danych z obiektow (przejedz od linijki x do y) itd
   /**
@@ -30,15 +33,35 @@ public class ReadWithScanner {
   }
   
   ArrayList<MibType> ArrayOfTypes = new ArrayList<MibType>();
-  int[] mib2 = {1,3,6,1,2,1};
+  //int[] mib2 = {1,3,6,1,2,1};
   ArrayList<String> MibGroups = new ArrayList<String>();
- 
-  public Map<String, Integer> MibGroupsMapping() throws IOException
+  
+  
+  
+  public LinkedHashMap<String, List<Integer>> MibGroupsMapping() throws IOException
   {
 	  Scanner sc =  new Scanner(fFilePath);
-	  Map<String, Integer> Groups = new HashMap<String, Integer>();
-	  int group_oid;
+	 
+
+	
+	  
+	  LinkedHashMap<String, List<Integer>> Groups = new LinkedHashMap<String, List<Integer>>();
+	  Integer group_oid;
 	  while(sc.hasNextLine()){
+		  List<Integer> Mib2 = new LinkedList<Integer>();
+		  
+		
+		  List<Integer> Mib2_temp = Mib2;
+		  
+		  Mib2.add(1);
+		  Mib2.add(3);
+		  Mib2.add(6);
+		  Mib2.add(1);
+		  Mib2.add(2);
+		  Mib2.add(1);
+		  
+
+		  
 		String grline = sc.nextLine();
 		Matcher mGroup  = Pattern.compile("\\s+(\\w+)\\s+OBJECT\\sIDENTIFIER\\s::=\\s\\{\\s(mib-2)\\s(\\d+)\\s\\}").matcher(grline); 
 		if(mGroup.find()){
@@ -48,20 +71,28 @@ public class ReadWithScanner {
 //			System.out.println("Group 3 = " + mGroup.group(2));
 //			System.out.println("Group 3 = " + mGroup.group(3)); // number
 			group_oid = Integer.parseInt(mGroup.group(3));
-			Groups.put(mGroup.group(1),group_oid);
+
+			  
+			  Mib2_temp.add(group_oid);
+			Groups.put(mGroup.group(1), Mib2_temp);
 			
 		}
+
 		
 	  }
-	  for (Map.Entry<String, Integer> entry : Groups.entrySet())
-		{
-			System.out.println(entry.getKey() + "/" + entry.getValue());
-		}
-//	  System.out.println(Groups.get(1));
-	  
+	 
+	  FindChildren(Groups);
+//	  
+//	  System.out.println(Groups.keySet());
+//	  System.out.println(Groups.values());
+//	  
 	  return Groups;
   }
   
+  
+  private void FindChildren(LinkedHashMap<String, List<Integer>> in_group){
+	  //
+  }
   
   public void ProcessMibFile() throws IOException{
 	//fFilePath = Paths.get(aFileName);
@@ -128,19 +159,7 @@ public class ReadWithScanner {
 	    	 //System.out.println("ACCESS = " + mACCESS.group().replace("ACCESS","").trim()); 
 	    }
   }
-	/*public static void regexChecker(String theRegex, String str2Check)
-	{
-		
-		Pattern checkRegex = Pattern.compile(theRegex);
-		
-		Matcher regexMatcher = checkRegex.matcher(str2Check);
-		
-		
-		
-		
-	}*/
-  
-  
+
   // PRIVATE 
   private Path fFilePath;
   private final static Charset ENCODING = StandardCharsets.UTF_8;  

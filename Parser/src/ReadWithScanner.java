@@ -17,8 +17,8 @@ public class ReadWithScanner {
 
 	System.out.println(System.getProperty("user.dir"));
     ReadWithScanner parser = new ReadWithScanner("mib.txt");
-    parser.ProcessMibFile();
-    log("Done.");
+    //parser.ProcessMibFile();
+    parser.MibGroupsMapping();
   }
   //TODO: Dorobic funkcje na znajdywanie obiektow (znajdz linijke poczatku i konca), danych z obiektow (przejedz od linijki x do y) itd
   /**
@@ -30,11 +30,37 @@ public class ReadWithScanner {
   }
   
   ArrayList<MibType> ArrayOfTypes = new ArrayList<MibType>();
-  int[] mib2 = {1,3,6,1,2,1,Integer.MAX_VALUE};
-  
-  
+  int[] mib2 = {1,3,6,1,2,1};
+  ArrayList<String> MibGroups = new ArrayList<String>();
  
-
+  public Map<String, Integer> MibGroupsMapping() throws IOException
+  {
+	  Scanner sc =  new Scanner(fFilePath);
+	  Map<String, Integer> Groups = new HashMap<String, Integer>();
+	  int group_oid;
+	  while(sc.hasNextLine()){
+		String grline = sc.nextLine();
+		Matcher mGroup  = Pattern.compile("\\s+(\\w+)\\s+OBJECT\\sIDENTIFIER\\s::=\\s\\{\\s(mib-2)\\s(\\d+)\\s\\}").matcher(grline); 
+		if(mGroup.find()){
+			
+//			System.out.println("Group 1 = " + mGroup.group(0));
+//			System.out.println("Group 2 = " + mGroup.group(1)); // name
+//			System.out.println("Group 3 = " + mGroup.group(2));
+//			System.out.println("Group 3 = " + mGroup.group(3)); // number
+			group_oid = Integer.parseInt(mGroup.group(3));
+			Groups.put(mGroup.group(1),group_oid);
+			
+		}
+		
+	  }
+	  for (Map.Entry<String, Integer> entry : Groups.entrySet())
+		{
+			System.out.println(entry.getKey() + "/" + entry.getValue());
+		}
+//	  System.out.println(Groups.get(1));
+	  
+	  return Groups;
+  }
   
   
   public void ProcessMibFile() throws IOException{
@@ -79,7 +105,7 @@ public class ReadWithScanner {
 	            
 	            mib_name = mNAME.group().replace("OBJECT-TYPE","").trim();
 	            
-	            System.out.println(mib_name);
+	           // System.out.println(mib_name);
 	            //MibType mib = new MibType(NAME, );
 	            //ArrayOfTypes.add(object);
 	            
@@ -88,11 +114,11 @@ public class ReadWithScanner {
 	    	 if(mACCESS.find()){
 	            	//access = mACCESS.group().replace("ACCESS","").trim();
 	    		 access = mACCESS.group().replace("ACCESS","").trim();
-	            	System.out.println(access);
+	            	//System.out.println(access);
 	
 	            }
 	    	if(mOID.find()){
-            	System.out.println(access);
+            	//System.out.println(access);
             	
 	    		
 	    	}
@@ -151,19 +177,19 @@ class MibType {
 	 
 	 void GetStringList(){
 		 List<String> list = new ArrayList<String>();
-		 "system 1.1.235.6.5"
-		 while(hasnextline){
+		// "system 1.1.235.6.5"
+		/* while(hasnextline){
 		 
 				 
-		 }
+		 }*/
 		 mib_string_list = list;
 	 }
-	 List<Integer> ParseStringList(List<String> listofstrings, String input){
-		 List<String> list = new ArrayList<String>();
+	// List<Integer> ParseStringList(List<String> listofstrings, String input){
+		 //List<String> list = new ArrayList<String>();
 	 }
 	 
 	 
 	 
- }
+ 
  
  

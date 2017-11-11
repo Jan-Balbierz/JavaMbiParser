@@ -59,7 +59,7 @@ public class ReadWithScanner {
 		  Mib2.add(1);
 		  Mib2.add(2);
 		  Mib2.add(1);
-		  
+		  //ihojiadsjiadssaijdasjisadjioadsjisadjiadsjisdajiadsji
 
 		  
 		String grline = sc.nextLine();

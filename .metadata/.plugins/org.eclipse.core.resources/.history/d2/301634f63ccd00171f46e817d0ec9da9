@@ -1,0 +1,349 @@
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+//import java.util.regex.Matcher;
+
+//import java.util.regex.Pattern;
+
+/** Assumes UTF-8 encoding. JDK 7+. */
+public class ReadWithScanner {
+
+	public static void main(String... aArgs) throws IOException {
+
+		System.out.println(System.getProperty("user.dir"));
+		ReadWithScanner parser = new ReadWithScanner("mib.txt");
+		// parser.ProcessMibFile();
+		LinkedHashMap<String, String> list_of_groups = parser
+				.MibGroupsMapping_string();
+		// parser.FindChildren(list_of_groups);
+
+	}
+
+	// TODO: Dorobic funkcje na znajdywanie obiektow (znajdz linijke poczatku i
+	// konca), danych z obiektow (przejedz od linijki x do y) itd
+	/**
+	 * Constructor.
+	 * 
+	 * @param aFileName
+	 *            full name of an existing, readable file.
+	 */
+	public ReadWithScanner(String aFileName) {
+		fFilePath = Paths.get(aFileName);
+	}
+
+	// ArrayList<MibType> ArrayOfTypes = new ArrayList<MibType>();
+	// int[] mib2 = {1,3,6,1,2,1};
+	ArrayList<String> MibGroups = new ArrayList<String>();
+
+	public LinkedHashMap<String, String> MibGroupsMapping_string()
+			throws IOException {
+		Scanner sc = new Scanner(fFilePath);
+		// Scanner s = new Scanner(fFilePath);
+		String mib_name = "";
+		String child_oid_string = null;
+		String child_oid_number = null;
+		String group_oid;
+
+		LinkedHashMap<String, String> Groups = new LinkedHashMap<String, String>();
+		// LinkedHashMap<String, List<String>> tree = new LinkedHashMap<String,
+		// List<String>>();
+		List<String> list_of_parents = new ArrayList<String>();
+		while (sc.hasNextLine()) {
+
+			String Mib2 = new String();
+			String Mib2_temp = Mib2;
+			String Oid_temp = Mib2_temp;
+
+			Mib2 = "136121.";
+
+			String grline = sc.nextLine();
+
+			Matcher mGroup = Pattern
+					.compile(
+							"\\s+(\\w+)\\s+OBJECT\\sIDENTIFIER\\s::=\\s\\{\\s(mib-2)\\s(\\d+)\\s\\}")
+					.matcher(grline);
+
+			Matcher mOid = Pattern.compile(
+					"\\s+::=\\s\\{\\s((\\w+)\\s(\\d+))\\s\\}").matcher(grline);
+			Matcher mName = Pattern.compile("\\s+(.*?)\\sOBJECT-TYPE").matcher(
+					grline);
+
+			if (mGroup.find()) {
+
+				// System.out.println("Group 1 = " + mGroup.group(0));
+				// System.out.println("Group 2 = " + mGroup.group(1)); // name
+				// System.out.println("Group 3 = " + mGroup.group(2));
+				// System.out.println("Group 3 = " + mGroup.group(3)); // number
+				group_oid = mGroup.group(3);
+
+				Mib2_temp = Mib2.concat(group_oid);
+
+				Groups.put(mGroup.group(1), Mib2_temp); // mapa string string
+														// grup
+				list_of_parents.add(mGroup.group(1));
+
+			}
+
+			// dzieci
+			if (mName.find()) {
+
+				mib_name = mName.group(1);
+
+			}
+
+			if (mOid.find()) {
+				child_oid_string = mOid.group(2); // w oid np.: system,
+													// interface
+
+				// child_name = mOid.group(2);
+
+				if (Groups.containsKey(child_oid_string)) {
+
+					child_oid_number = Groups.get(child_oid_string).concat(".")
+							.concat(mOid.group(3)); // numer oid
+
+				} else {
+
+					child_oid_number = "0";
+
+				}
+
+			}
+
+			// tree.put(tree_name_parent, tree_children);
+			Groups.put(mib_name, child_oid_number);
+
+		} // while
+
+		// for (String parent : list_of_parents) {
+		FindChildren(Groups, "", 0);
+		// }
+
+		LinkedHashMap<String, List<String>> tree = new LinkedHashMap<String, List<String>>();
+		String parent = null;
+
+		for (Map.Entry<String, String> entry : Groups.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			List<String> listOfChildren = new ArrayList<String>();
+
+			Integer count = count(value, "."); // funkcja do liczenia ile jest
+												// kropek zdefiniowana niżej
+			// System.out.println(count);
+			boolean IsPrinted = false;
+			boolean IsNode = false;
+			boolean IsChild = false;
+
+			// boolean IsPrinted = false;
+			for (Map.Entry<String, String> entry2 : Groups.entrySet()) {
+
+				String key2 = entry2.getKey();
+				String value2 = entry2.getValue();
+
+				Integer count2 = count(value2, ".");
+
+				if (value2.contains(value) && count2 == count + 1/*
+																 * &&
+																 * value2.length
+																 * () <
+																 * value.length
+																 * () + 4
+																 */) {
+					// if(value2.contains(value) && count2 == count+1){
+					// IsParent = true;
+					// if (!IsPrinted) {
+					// System.out.println(key);
+					//
+					// // parent = key;
+					//
+					// }
+
+					// if (IsParent) {
+
+					// System.out.print("\t");
+					// System.out.println(key2);
+
+					// }
+
+					// listOfChildren.add(key2);
+				}
+
+			}
+
+			// tree.put(parent, listOfChildren);
+
+		}
+
+		// while(s.hasNextLine()){
+		//
+		// String nextline = sc.nextLine();
+		//
+		//
+		// String child_name = null;
+		// String parent_name = null;
+		//
+		// Matcher mOid_2 =
+		// Pattern.compile("\\s+::=\\s\\{\\s((\\w+)\\s(\\d+))\\s\\}").matcher(nextline);
+		//
+		// if(mOid_2.find()){
+		//
+		// parent_name = mOid_2.group(2);
+		//
+		//
+		// }
+		//
+		//
+		// }
+
+		// FindChildren(Groups);
+		// System.out.println(tree.keySet());
+
+		// System.out.println(tree.values());
+		System.out.println(Groups.keySet());
+
+		System.out.println(Groups.values());
+		// //
+		// // System.out.println("");
+		// System.out.println(tree.keySet());
+		// // System.out.println(tree.values());
+
+		return Groups;
+	}
+
+	public static int count(String text, String find) {
+		int index = 0, count = 0, length = find.length();
+		while ((index = text.indexOf(find, index)) != -1) {
+			index += length;
+			count++;
+		}
+		return count;
+	}
+
+	public void ProcessMibFile() throws IOException {
+		// fFilePath = Paths.get(aFileName);
+		Scanner s = new Scanner(fFilePath);
+		String mib_name = "";
+		String access = "";
+		String Description = "";
+		int child_oid;
+		while (s.hasNextLine()) {
+			String line = s.nextLine();
+			// System.out.println(line.replaceAll("\\s+",""));
+			/*
+			 * if(line.indexOf("IMPORTS") != -1){ System.out.println("lol");
+			 * //s.nextLine(); for( int i = 0; i < 20; i++) {
+			 * System.out.println(s.next()); }
+			 * 
+			 * 
+			 * 
+			 * } // CHUJ else{ //System.out.println(line.replaceAll("\\s+",""));
+			 * //System.out.print("lul: "); //System.out.println(s.next()); }
+			 * //System.out.println("lol");
+			 */
+			// System.out.println(line);
+			Matcher mNAME = Pattern.compile("\\s+(.*?)\\sOBJECT-TYPE").matcher(
+					line);
+			Matcher mACCESS = Pattern.compile("\\s+ACCESS+.\\s(.*)").matcher(
+					line);
+			// Matcher DESCRIPTION =
+			// Pattern.compile("\\s+(.*?)\\sOBJECT-TYPE").matcher(line);
+			// Matcher mOID =
+			// Pattern.compile("(::=\\s+\\{(.*?)\\})").matcher(line);
+
+			if (mNAME.find()) {
+				// NAME.group().replace("OBJECT-TYPE","");
+				// System.out.println("NAME = " +
+				// mNAME.group().replace("OBJECT-TYPE","").trim());
+
+				mib_name = mNAME.group().replace("OBJECT-TYPE", "").trim();
+
+				// System.out.println(mib_name);
+				// MibType mib = new MibType(NAME, );
+				// ArrayOfTypes.add(object);
+
+			}
+
+			if (mACCESS.find()) {
+				// access = mACCESS.group().replace("ACCESS","").trim();
+				access = mACCESS.group().replace("ACCESS", "").trim();
+				// System.out.println(access);
+
+			}
+			// if(mOID.find()){
+			// //System.out.println(access);
+			//
+			//
+			// }
+
+			// System.out.println(mib_name);
+			//
+			// System.out.println("ACCESS = " +
+			// mACCESS.group().replace("ACCESS","").trim());
+		}
+	}
+
+	// PRIVATE
+	private Path fFilePath;
+	private final static Charset ENCODING = StandardCharsets.UTF_8;
+
+	// class MibType {
+	// public String NAME;
+	// public String ACCESS;
+	// public String DESCRIPTION;
+	// List<Integer> oid = new ArrayList<Integer>();
+	//
+	// MibType(String in_NAME, String in_ACCESS, String in_DESCRIPTION,
+	// List<Integer> parent_mib, int children_mib) {
+	// oid = parent_mib;
+	// oid.add(children_mib);
+	// NAME = in_NAME;
+	// ACCESS = in_ACCESS;
+	// DESCRIPTION = in_DESCRIPTION;
+	//
+	// }
+	// }
+
+	// Za pierwszym razem wywolac z Lista, parentem dla ktorego chcemy znalezc
+	// wszystkie dzieci i 0 number of tabs
+	void FindChildren(LinkedHashMap<String, String> groups, String parent,
+			int number_of_tabs) {
+		number_of_tabs += 1;
+		String parent_value = "";
+		Integer number_of_parent_dots = 0;
+
+		// find parent key, value and number of parent's dots
+		for (Map.Entry<String, String> hMap : groups.entrySet()) {
+			String parent_key = hMap.getKey();
+			if (parent_key == parent) {
+				parent_value = hMap.getValue();
+				number_of_parent_dots = count(parent_value, ".");
+				break;
+			}
+		}
+		// Print children
+		for (Map.Entry<String, String> child : groups.entrySet()) {
+			String child_key = child.getKey();
+			String child_value = child.getValue();
+			Integer number_of_child_dots = count(child_value, ".");
+			if (child_value.contains(parent_value)
+					&& number_of_child_dots == number_of_parent_dots + 1) {
+
+				for (int i = 0; i < number_of_tabs; ++i) {
+					System.out.print("   ");
+				}
+
+				System.out.println(child_key);
+				FindChildren(groups, child_key, number_of_tabs);
+			}
+		}
+	}
+}
